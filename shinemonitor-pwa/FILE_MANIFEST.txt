@@ -1,0 +1,440 @@
+================================================================================
+ShineMonitor ESS - Progressive Web App (v3.43.0.1)
+File Manifest and Description
+================================================================================
+
+ROOT DIRECTORY
+================================================================================
+
+index.html (23 KB)
+  - Main HTML application shell
+  - Contains all UI structure and placeholder elements
+  - Loads external CDN libraries (Chart.js, CryptoJS)
+  - Service worker registration
+  - SVG icons inline for offline support
+  - Features: Login view, Dashboard, Devices, Charts, Alarms, Settings
+
+manifest.json (3 KB)
+  - PWA manifest for installation and configuration
+  - App name, icons, shortcuts, theme colors
+  - Share target capability
+  - Maskable icons for adaptive display
+  - Start URL and display mode configuration
+
+sw.js (5 KB)
+  - Service Worker for offline support and caching
+  - Implements cache-first strategy for static assets
+  - Network-first for API calls with fallback
+  - Background sync capability
+  - Cache management (versioning, cleanup)
+
+README.md (12 KB)
+  - Comprehensive feature documentation
+  - Usage guide for all views and features
+  - API integration details
+  - Customization instructions
+  - Security considerations
+  - Troubleshooting guide
+
+DEPLOYMENT.md (12 KB)
+  - Complete deployment instructions
+  - Quick start for local testing
+  - Production deployment options:
+    * nginx configuration
+    * Apache configuration
+    * Docker/Docker Compose
+    * Node.js/Express
+    * AWS S3 + CloudFront
+  - HTTPS and Let's Encrypt setup
+  - CORS proxy configuration
+  - Performance optimization
+  - Kubernetes scaling
+  - Monitoring and logging
+  - Security checklist
+
+FILE_MANIFEST.txt
+  - This file
+  - Directory structure and file descriptions
+
+================================================================================
+CSS DIRECTORY (css/)
+================================================================================
+
+app.css (28 KB)
+  - Complete application stylesheet
+  - CSS variables for theming (dark theme by default)
+  - Color scheme:
+    * Primary: #0f1923 (dark background)
+    * Accent Green: #00e676 (solar/success)
+    * Accent Blue: #2196f3 (grid)
+    * Accent Orange: #ff9800 (battery)
+    * Accent Purple: #9c27b0 (load)
+  - Responsive design (mobile-first)
+  - Grid and Flexbox layouts
+  - CSS animations (spin, pulse, fadeIn, slideIn)
+  - Component styles:
+    * Login form
+    * Navigation tabs
+    * Cards and modals
+    * Charts and graphs
+    * Alert/alarm display
+  - Dark scrollbar styling
+  - Print media queries
+  - Touch-friendly spacing
+
+================================================================================
+JAVASCRIPT DIRECTORY (js/)
+================================================================================
+
+api.js (7 KB)
+  - ShineMonitor API client implementation
+  - SHA1-based request signing matching Android app
+  - Authentication:
+    * Login with email and password
+    * Token and secret generation
+    * Automatic signature calculation
+  - API methods:
+    * getAccountInfo() - Plants and devices
+    * getPlantInfo() - Plant details
+    * getDeviceLastData() - Real-time metrics
+    * getDeviceOneDayHistory() - Historical data
+    * getDeviceChartFields() - Available parameters
+    * getDeviceControlFields() - Control options
+    * controlDevice() - Send commands
+  - Request parameter building
+  - Error handling and response parsing
+  - localStorage management for credentials
+
+utils.js (11 KB)
+  - Utility functions and helpers
+  - Formatting functions:
+    * formatPower(), formatEnergy(), formatVoltage()
+    * formatCurrent(), formatTemperature(), formatPercentage()
+    * formatNumber(), formatDateTime(), formatDate(), formatTime()
+    * getTimeAgo() - Relative timestamps
+  - Data manipulation:
+    * deepClone(), isEmpty()
+    * debounce(), throttle()
+    * toQueryString(), parseQueryString()
+  - localStorage with error handling:
+    * getLocalStorage(), setLocalStorage()
+    * removeLocalStorage(), clearLocalStorage()
+  - UI helpers:
+    * showToast() - Notification messages
+    * showLoading() - Loading spinner
+    * getCSSVariable(), setCSSVariable()
+  - Browser features:
+    * requestNotificationPermission()
+    * sendNotification()
+    * getURLParams()
+    * generateUUID()
+  - Network:
+    * fetchWithTimeout() - Safe API calls
+
+app.js (14 KB)
+  - Main application controller
+  - Application initialization and lifecycle
+  - View management and routing
+  - Login/logout handling
+  - Modal management
+  - Navigation between views:
+    * Dashboard
+    * Devices
+    * Charts
+    * Alarms
+  - Event listener setup
+  - Settings modal management
+  - Alarm loading and display:
+    * Alarm severity classification
+    * Alarm message mapping
+    * Active vs history tabs
+  - Refresh functionality
+  - Window visibility handling (pause/resume auto-refresh)
+  - User authentication check
+
+dashboard.js (12 KB)
+  - Dashboard view controller
+  - Real-time data fetching and caching
+  - Auto-refresh timer management
+  - Dashboard updates:
+    * updateStats() - Quick stat cards
+    * updateEnergyFlow() - Power flow diagram
+    * updatePlants() - Plant summary cards
+    * updateDevicesSummary() - Device cards
+  - Energy flow diagram:
+    * Solar power calculation
+    * Battery power and SOC
+    * Grid power flow
+    * Load power
+    * Battery fill animation based on SOC
+  - Device data aggregation
+  - Plant grouping and status
+  - Click handlers for device details
+  - Settings-aware refresh intervals
+
+devices.js (14 KB)
+  - Device list and detail view
+  - Device data caching
+  - Device list display:
+    * Real-time metrics per device
+    * Status indicators (online/offline/alarm)
+    * Device information (name, serial, type)
+  - Device details modal:
+    * Comprehensive metrics display
+    * Power, voltage, current, temperature
+    * Energy generation (daily and total)
+    * Battery metrics (SOC, voltage, power)
+    * Solar and grid metrics
+    * Update timestamps
+  - Device control modal:
+    * Control field loading
+    * Dynamic input generation (select, number, text)
+    * Value display and editing
+    * Control command sending
+    * Confirmation and error handling
+  - Device click handlers
+  - Data refresh and cache update
+
+charts.js (11 KB)
+  - Historical data charts view
+  - Chart.js integration
+  - Device and parameter selection
+  - Date picker for history
+  - Data loading from API:
+    * querySPDeviceOneDayHistory endpoint
+    * Parameter mapping to units
+  - Chart rendering:
+    * Line chart with area fill
+    * Responsive sizing
+    * Custom colors (green accent)
+    * Dark theme styling
+    * Grid and axes styling
+    * Legend and tooltips
+  - Data formatting:
+    * Time conversion for X-axis
+    * Value formatting per parameter
+    * Support for multiple data formats
+  - Chart destruction and recreation
+  - Parameter unit mapping
+
+settings.js (12 KB)
+  - Settings and configuration management
+  - Settings tabs:
+    * General (refresh rate, theme, notifications)
+    * API Configuration (base URL, company key, token)
+    * Device Control (device command interface)
+  - Settings persistence:
+    * Load from localStorage
+    * Save with validation
+    * Apply theme changes
+  - API configuration:
+    * Custom API base URL support (for CORS proxy)
+    * Company key display
+    * Token management and clearing
+  - Device control interface:
+    * Device selection dropdown
+    * Dynamic control field generation
+    * Command sending and confirmation
+    * Error handling
+  - Notification permission handling
+  - General settings application:
+    * Refresh interval (10-300 seconds)
+    * Theme switching (dark/light)
+    * Notification enable/disable
+  - Tab switching logic
+
+================================================================================
+DIRECTORY STRUCTURE
+================================================================================
+
+shinemonitor-pwa/
+├── index.html                          Main application HTML
+├── manifest.json                       PWA manifest
+├── sw.js                              Service Worker
+├── README.md                          Feature documentation
+├── DEPLOYMENT.md                      Deployment guide
+├── FILE_MANIFEST.txt                  This file
+├── css/
+│   └── app.css                        Complete stylesheet (28 KB)
+├── js/
+│   ├── api.js                         API client (7 KB)
+│   ├── app.js                         Main controller (14 KB)
+│   ├── dashboard.js                   Dashboard module (12 KB)
+│   ├── devices.js                     Devices module (14 KB)
+│   ├── charts.js                      Charts module (11 KB)
+│   ├── settings.js                    Settings module (12 KB)
+│   └── utils.js                       Utilities (11 KB)
+└── icons/
+    └── (SVG icons embedded in HTML)   No separate icon files
+
+TOTAL SIZE: ~170 KB (uncompressed)
+With gzip compression: ~50 KB
+
+================================================================================
+EXTERNAL DEPENDENCIES
+================================================================================
+
+Loaded from CDN:
+  - Chart.js v3.9.1 (for historical charts)
+    https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js
+  
+  - CryptoJS v4.1.1 (for SHA1 hashing)
+    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js
+
+No server-side dependencies or build process required.
+Pure vanilla JavaScript - no frameworks like React, Vue, Angular.
+
+================================================================================
+KEY FEATURES IMPLEMENTATION
+================================================================================
+
+Authentication
+  - Login form in index.html
+  - API login in api.js with SHA1 signing
+  - Token storage in localStorage
+  - Automatic signature generation for all requests
+
+Real-time Dashboard
+  - Energy flow diagram with animated arrows (CSS)
+  - Power statistics cards with auto-refresh
+  - Plant summary with device count
+  - Device summary with key metrics
+  - 30-second auto-refresh (configurable)
+
+Device Management
+  - List all connected devices
+  - View detailed metrics
+  - Send control commands
+  - Support for multiple device types
+
+Historical Analytics
+  - Date picker for historical data
+  - Device and parameter selection
+  - Interactive Chart.js graphs
+  - Support for power, voltage, temperature, energy
+
+Alarms & Monitoring
+  - Real-time alarm detection
+  - Severity classification (critical/warning/info)
+  - Alarm timestamp and descriptions
+  - Visual indicators (color-coded)
+
+Settings & Configuration
+  - Adjustable refresh interval
+  - Theme switching (dark/light)
+  - Notification preferences
+  - Custom API base URL (for CORS proxy)
+  - Credential management
+
+PWA Features
+  - Service Worker for offline support
+  - App manifest for installation
+  - Installable on mobile and desktop
+  - Cached assets for fast loading
+  - Network-first API calls with cache fallback
+
+================================================================================
+SECURITY FEATURES
+================================================================================
+
+- SHA1 request signing (matching Eybond Android app)
+- Secure token-based authentication
+- HTTPS-ready configuration
+- XSS protection headers
+- CSRF token handling
+- localStorage encryption awareness
+- Secure logout (clears all credentials)
+- CORS proxy support for mixed content
+- Service worker verified for production
+
+================================================================================
+TESTING CHECKLIST
+================================================================================
+
+Before Deployment:
+  [ ] All JavaScript files load without errors
+  [ ] Login works with valid credentials
+  [ ] Dashboard displays data correctly
+  [ ] Energy flow diagram animates
+  [ ] Device list populates
+  [ ] Charts render with data
+  [ ] Settings save and persist
+  [ ] Logout clears all data
+  [ ] Service Worker registers successfully
+  [ ] App works offline (cached content)
+  [ ] Responsive on mobile/tablet/desktop
+  [ ] HTTPS works without mixed content errors
+  [ ] Manifest validates (PWA checklist)
+  [ ] Install-to-home-screen works
+
+Browser Testing:
+  [ ] Chrome/Chromium 90+
+  [ ] Firefox 88+
+  [ ] Safari 14+
+  [ ] Edge 90+
+  [ ] Mobile Safari iOS 13.4+
+  [ ] Chrome Android 90+
+
+Performance Metrics:
+  [ ] First Contentful Paint < 2s
+  [ ] Time to Interactive < 3s
+  [ ] Lighthouse score > 90
+  [ ] Bundle size < 200 KB
+  [ ] Memory usage < 100 MB typical
+
+================================================================================
+DEPLOYMENT CHECKLIST
+================================================================================
+
+Before Going Live:
+  [ ] Domain configured
+  [ ] HTTPS certificate installed
+  [ ] Web server configured (nginx/Apache/Node.js)
+  [ ] Service Worker enabled
+  [ ] Gzip compression enabled
+  [ ] Cache headers set correctly
+  [ ] Security headers added
+  [ ] CORS properly configured
+  [ ] API base URL verified
+  [ ] Error logging enabled
+  [ ] Monitoring set up
+  [ ] Backup strategy in place
+  [ ] SSL/TLS renewal automated
+
+Post-Deployment:
+  [ ] Monitor error logs
+  [ ] Check API connectivity
+  [ ] Verify offline mode works
+  [ ] Test on production devices
+  [ ] Monitor performance metrics
+  [ ] Set up alert system
+  [ ] Document configuration
+  [ ] Create runbook for incidents
+
+================================================================================
+SUPPORT & MAINTENANCE
+================================================================================
+
+Regular Maintenance:
+  - Monitor web server error logs
+  - Check API endpoint availability
+  - Review browser console for errors
+  - Update CDN links if needed
+  - Refresh SSL certificates (auto via certbot)
+  - Monitor disk space usage
+  - Review access logs for security
+
+Troubleshooting:
+  - See README.md Troubleshooting section
+  - Check DEPLOYMENT.md for common issues
+  - Review browser console (F12)
+  - Check Service Worker status
+  - Verify API connectivity with curl
+
+Version Information:
+  - App Version: 3.43.0.1 (matches Eybond Android app)
+  - Build Date: February 2025
+  - Status: Production Ready
+  - License: See README.md
+
+================================================================================

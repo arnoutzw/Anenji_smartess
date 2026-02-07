@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ShineMonitor ESS - Solar Inverter and Energy Storage Monitoring">
+    <meta name="theme-color" content="#0f1923">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ShineMonitor">
+
+    <title>ShineMonitor ESS</title>
+
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%230f1923' width='192' height='192'/><circle cx='96' cy='96' r='60' fill='%2300e676'/><path d='M96 50 L110 80 L96 75 L82 80 Z' fill='%230f1923'/></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%230f1923' width='192' height='192'/><circle cx='96' cy='96' r='60' fill='%2300e676'/></svg>">
+
+    <link rel="stylesheet" href="/css/app.css">
+
+    <!-- External libraries from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+</head>
+<body>
+    <div id="app" class="app-container">
+        <!-- Login View -->
+        <div id="loginView" class="view">
+            <div class="login-container">
+                <div class="login-header">
+                    <div class="logo-circle">
+                        <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+                            <circle cx="30" cy="30" r="28" stroke="#00e676" stroke-width="2"/>
+                            <path d="M30 8 L38 20 L30 16 L22 20 Z" fill="#00e676"/>
+                            <circle cx="30" cy="30" r="4" fill="#00e676"/>
+                            <path d="M30 34 L30 45" stroke="#00e676" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <h1>ShineMonitor ESS</h1>
+                    <p>Solar Inverter & Energy Storage</p>
+                </div>
+
+                <form id="loginForm" class="login-form">
+                    <div class="form-group">
+                        <label for="loginEmail">Email or Username</label>
+                        <input type="text" id="loginEmail" placeholder="user@example.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" placeholder="••••••••" required>
+                    </div>
+
+                    <div class="form-group checkbox">
+                        <input type="checkbox" id="rememberMe">
+                        <label for="rememberMe">Remember me</label>
+                    </div>
+
+                    <div id="loginError" class="error-message"></div>
+
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <span id="loginButtonText">Sign In</span>
+                        <span id="loginSpinner" class="spinner" style="display: none;"></span>
+                    </button>
+                </form>
+
+                <div class="login-footer">
+                    <p>Powered by ShineMonitor API</p>
+                    <p class="api-url-note">API: android.shinemonitor.com</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main App View -->
+        <div id="mainView" class="view" style="display: none;">
+            <!-- Header -->
+            <header class="app-header">
+                <div class="header-content">
+                    <h1 id="pageTitle">Dashboard</h1>
+                    <div class="header-right">
+                        <button id="refreshBtn" class="btn btn-icon" title="Refresh">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M23 4v6h-6"/>
+                                <path d="M1 20v-6h6"/>
+                                <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+                            </svg>
+                        </button>
+                        <button id="settingsBtn" class="btn btn-icon" title="Settings">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m2.98 2.98l4.24 4.24M1 12h6m6 0h6m-16.78 7.78l4.24-4.24m2.98-2.98l4.24-4.24"/>
+                            </svg>
+                        </button>
+                        <button id="logoutBtn" class="btn btn-icon" title="Logout">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16 17 21 12 16 7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <nav class="nav-tabs">
+                    <button class="nav-tab active" data-view="dashboard">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7"/>
+                            <rect x="14" y="3" width="7" height="7"/>
+                            <rect x="14" y="14" width="7" height="7"/>
+                            <rect x="3" y="14" width="7" height="7"/>
+                        </svg>
+                        Dashboard
+                    </button>
+                    <button class="nav-tab" data-view="devices">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                            <line x1="2" y1="20" x2="22" y2="20"/>
+                        </svg>
+                        Devices
+                    </button>
+                    <button class="nav-tab" data-view="charts">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="2" x2="12" y2="22"/>
+                            <path d="M17 5H9.5a1.5 1.5 0 0 0-1.5 1.5v12a1.5 1.5 0 0 0 1.5 1.5H17"/>
+                        </svg>
+                        Charts
+                    </button>
+                    <button class="nav-tab" data-view="alarms">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3.05h16.94a2 2 0 0 0 1.71-3.05L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                            <line x1="12" y1="9" x2="12" y2="13"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                        Alarms
+                    </button>
+                </nav>
+            </header>
+
+            <!-- Content Area -->
+            <main class="app-content">
+                <!-- Dashboard View -->
+                <section id="dashboardSection" class="section active">
+                    <div class="dashboard-grid">
+                        <!-- Quick Stats -->
+                        <div class="stats-row">
+                            <div class="stat-card">
+                                <div class="stat-label">Total Power</div>
+                                <div class="stat-value" id="totalPower">-- W</div>
+                                <div class="stat-unit">Real-time</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Today's Generation</div>
+                                <div class="stat-value" id="todayGeneration">-- kWh</div>
+                                <div class="stat-unit">Solar</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Battery SOC</div>
+                                <div class="stat-value" id="batterySoc">-- %</div>
+                                <div class="stat-unit">State of Charge</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Grid Status</div>
+                                <div class="stat-value" id="gridStatus">-- V</div>
+                                <div class="stat-unit">Voltage</div>
+                            </div>
+                        </div>
+
+                        <!-- Energy Flow Diagram -->
+                        <div class="energy-flow-container">
+                            <h2>Energy Flow</h2>
+                            <div class="energy-flow">
+                                <!-- Solar -->
+                                <div class="flow-node solar">
+                                    <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+                                        <circle cx="30" cy="30" r="25" stroke="#00e676" stroke-width="2"/>
+                                        <circle cx="30" cy="30" r="15" fill="#00e676" opacity="0.1"/>
+                                        <path d="M30 8 L36 18 L30 15 L24 18 Z" fill="#00e676"/>
+                                        <circle cx="30" cy="30" r="3" fill="#00e676"/>
+                                    </svg>
+                                    <div class="node-label">Solar</div>
+                                    <div class="node-value" id="solarPower">0 W</div>
+                                </div>
+
+                                <!-- Flow Arrow 1 -->
+                                <div class="flow-arrow arrow-1">
+                                    <svg width="100%" height="40" viewBox="0 0 100 40" fill="none">
+                                        <path d="M 10 20 Q 40 10 70 20" stroke="#00e676" stroke-width="2" stroke-dasharray="5,5" class="flow-line"/>
+                                        <polygon points="80,20 70,15 72,20 70,25" fill="#00e676" class="flow-arrow-head"/>
+                                    </svg>
+                                </div>
+
+                                <!-- Battery -->
+                                <div class="flow-node battery">
+                                    <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+                                        <rect x="15" y="10" width="30" height="40" rx="2" stroke="#ff9800" stroke-width="2"/>
+                                        <rect x="25" y="5" width="10" height="5" fill="#ff9800"/>
+                                        <rect x="18" y="15" width="24" height="26" fill="#ff9800" opacity="0.15" id="batteryFill"/>
+                                        <line x1="30" y1="48" x2="30" y2="52" stroke="#ff9800" stroke-width="2"/>
+                                    </svg>
+                                    <div class="node-label">Battery</div>
+                                    <div class="node-value" id="batteryPower">0 W</div>
+                                </div>
+
+                                <!-- Flow Arrow 2 -->
+                                <div class="flow-arrow arrow-2">
+                                    <svg width="100%" height="40" viewBox="0 0 100 40" fill="none">
+                                        <path d="M 10 20 Q 40 30 70 20" stroke="#2196f3" stroke-width="2" stroke-dasharray="5,5" class="flow-line"/>
+                                        <polygon points="80,20 70,15 72,20 70,25" fill="#2196f3" class="flow-arrow-head"/>
+                                    </svg>
+                                </div>
+
+                                <!-- Grid -->
+                                <div class="flow-node grid">
+                                    <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+                                        <circle cx="30" cy="30" r="25" stroke="#2196f3" stroke-width="2"/>
+                                        <path d="M30 8 L35 25 L30 20 L25 25 Z" fill="#2196f3"/>
+                                        <path d="M52 30 L45 35 L50 30 L45 25 Z" fill="#2196f3"/>
+                                        <path d="M30 52 L25 35 L30 40 L35 35 Z" fill="#2196f3"/>
+                                        <path d="M8 30 L15 25 L10 30 L15 35 Z" fill="#2196f3"/>
+                                    </svg>
+                                    <div class="node-label">Grid</div>
+                                    <div class="node-value" id="gridPower">0 W</div>
+                                </div>
+
+                                <!-- Flow Arrow 3 -->
+                                <div class="flow-arrow arrow-3">
+                                    <svg width="100%" height="40" viewBox="0 0 100 40" fill="none">
+                                        <path d="M 10 20 Q 40 10 70 20" stroke="#9c27b0" stroke-width="2" stroke-dasharray="5,5" class="flow-line"/>
+                                        <polygon points="80,20 70,15 72,20 70,25" fill="#9c27b0" class="flow-arrow-head"/>
+                                    </svg>
+                                </div>
+
+                                <!-- Load -->
+                                <div class="flow-node load">
+                                    <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+                                        <rect x="12" y="12" width="36" height="36" rx="2" stroke="#9c27b0" stroke-width="2"/>
+                                        <circle cx="22" cy="22" r="2" fill="#9c27b0"/>
+                                        <circle cx="38" cy="22" r="2" fill="#9c27b0"/>
+                                        <circle cx="22" cy="38" r="2" fill="#9c27b0"/>
+                                        <circle cx="38" cy="38" r="2" fill="#9c27b0"/>
+                                    </svg>
+                                    <div class="node-label">Load</div>
+                                    <div class="node-value" id="loadPower">0 W</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Plant Summary -->
+                        <div class="plants-container">
+                            <h2>Plants</h2>
+                            <div id="plantsList" class="plants-list">
+                                <div class="loading-spinner"></div>
+                            </div>
+                        </div>
+
+                        <!-- Devices Summary -->
+                        <div class="devices-summary-container">
+                            <h2>Devices</h2>
+                            <div id="devicesSummary" class="devices-summary">
+                                <div class="loading-spinner"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Devices View -->
+                <section id="devicesSection" class="section">
+                    <div class="devices-view">
+                        <div id="devicesList" class="devices-list">
+                            <div class="loading-spinner"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Charts View -->
+                <section id="chartsSection" class="section">
+                    <div class="charts-view">
+                        <div class="charts-controls">
+                            <div class="control-group">
+                                <label for="chartDate">Date:</label>
+                                <input type="date" id="chartDate">
+                            </div>
+                            <div class="control-group">
+                                <label for="chartDevice">Device:</label>
+                                <select id="chartDevice">
+                                    <option value="">Loading devices...</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label for="chartParameter">Parameter:</label>
+                                <select id="chartParameter">
+                                    <option value="">Select parameter...</option>
+                                </select>
+                            </div>
+                            <button id="loadChartBtn" class="btn btn-primary">Load Chart</button>
+                        </div>
+
+                        <div id="chartContainer" class="chart-container" style="display: none;">
+                            <canvas id="historyChart"></canvas>
+                        </div>
+                        <div id="chartLoading" class="loading-spinner"></div>
+                    </div>
+                </section>
+
+                <!-- Alarms View -->
+                <section id="alarmsSection" class="section">
+                    <div class="alarms-view">
+                        <div class="alarms-tabs">
+                            <button class="alarm-tab active" data-tab="active">Active Alarms</button>
+                            <button class="alarm-tab" data-tab="history">History</button>
+                        </div>
+                        <div id="activeAlarmsList" class="alarms-list">
+                            <div class="loading-spinner"></div>
+                        </div>
+                        <div id="alarmHistoryList" class="alarms-list" style="display: none;">
+                            <div class="loading-spinner"></div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <!-- Settings Modal -->
+        <div id="settingsModal" class="modal" style="display: none;">
+            <div class="modal-content modal-lg">
+                <div class="modal-header">
+                    <h2>Settings</h2>
+                    <button class="btn btn-icon close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="settings-tabs">
+                        <button class="setting-tab active" data-tab="general">General</button>
+                        <button class="setting-tab" data-tab="api">API Configuration</button>
+                        <button class="setting-tab" data-tab="device-control">Device Control</button>
+                    </div>
+
+                    <!-- General Settings -->
+                    <div id="generalTab" class="settings-content active">
+                        <div class="setting-group">
+                            <label>Refresh Interval (seconds)</label>
+                            <input type="number" id="refreshInterval" min="10" max="300" value="30">
+                        </div>
+                        <div class="setting-group">
+                            <label>Theme</label>
+                            <select id="themeSelect">
+                                <option value="dark">Dark (Default)</option>
+                                <option value="light">Light</option>
+                            </select>
+                        </div>
+                        <div class="setting-group">
+                            <label>
+                                <input type="checkbox" id="enableNotifications">
+                                Enable Notifications
+                            </label>
+                        </div>
+                        <button class="btn btn-primary" id="saveGeneralBtn">Save Settings</button>
+                    </div>
+
+                    <!-- API Configuration -->
+                    <div id="apiTab" class="settings-content">
+                        <div class="warning-box">
+                            <strong>Important:</strong> If the PWA is served over HTTPS but the API is HTTP, you may need to use a CORS proxy or self-host the API endpoint.
+                        </div>
+                        <div class="setting-group">
+                            <label for="apiBaseUrl">API Base URL</label>
+                            <input type="url" id="apiBaseUrl" placeholder="http://android.shinemonitor.com/public/">
+                            <small>Default: http://android.shinemonitor.com/public/</small>
+                        </div>
+                        <div class="setting-group">
+                            <label for="companyKey">Company Key (read-only)</label>
+                            <input type="text" id="companyKey" readonly>
+                        </div>
+                        <div class="setting-group">
+                            <label for="currentToken">Current Token (read-only)</label>
+                            <input type="text" id="currentToken" readonly style="font-size: 11px; word-break: break-all;">
+                        </div>
+                        <button class="btn btn-danger" id="clearTokenBtn">Clear Stored Credentials</button>
+                        <button class="btn btn-primary" id="saveApiBtn">Save API Settings</button>
+                    </div>
+
+                    <!-- Device Control -->
+                    <div id="deviceControlTab" class="settings-content">
+                        <div id="deviceControlFields">
+                            <div class="loading-spinner"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Device Details Modal -->
+        <div id="deviceDetailsModal" class="modal" style="display: none;">
+            <div class="modal-content modal-xl">
+                <div class="modal-header">
+                    <h2 id="deviceDetailsTitle">Device Details</h2>
+                    <button class="btn btn-icon close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="device-details-grid" id="deviceDetailsContent">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/utils.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/dashboard.js"></script>
+    <script src="/js/devices.js"></script>
+    <script src="/js/charts.js"></script>
+    <script src="/js/settings.js"></script>
+    <script src="/js/app.js"></script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(err => {
+                console.log('Service Worker registration failed:', err);
+            });
+        }
+    </script>
+</body>
+</html>
